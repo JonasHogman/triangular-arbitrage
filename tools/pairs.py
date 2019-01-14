@@ -1,5 +1,7 @@
 from poloniex import Poloniex
 import requests
+import requests
+import json
 
 
 def get_bid_ask():
@@ -7,9 +9,8 @@ def get_bid_ask():
     Creates a dictionary of highest bid and lowest ask values for all trading pairs available on the exchange,
     used for getting all the trading pairs
     """
-    polo = Poloniex()
     bid_ask_dict = {}
-    orig_dict = polo('returnTicker')
+    orig_dict = json.loads(requests.get('https://poloniex.com/public?command=returnTicker'))
     for key, value in orig_dict.items():
         bid_ask_dict[str(key)] = {'ask': float(value['lowestAsk']), 'bid': float(value['highestBid'])}
 
