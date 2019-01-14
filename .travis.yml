@@ -1,0 +1,3 @@
+language: python
+addons:
+  rethinkdb: '2.3.4'
