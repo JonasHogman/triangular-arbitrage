@@ -1,3 +1,6 @@
 language: python
+python:
+  - "3.6"
+
 addons:
   rethinkdb: '2.3.4'
