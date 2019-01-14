@@ -1,5 +1,3 @@
-from poloniex import Poloniex
-import requests
 import requests
 import json
 
