@@ -22,14 +22,15 @@ def calculate_triangle_both_ways(base_by_secondary, secondary_by_token, base_by_
 
     try:
         previous_max_profit = \
-            r.table('{}_{}_{}'.format(base, secondary, token)).order_by(index=r.desc('timestamp')).limit(1).nth(0).run(
+            r.db('arbitrage').table('{}_{}_{}'.format(base, secondary, token)).order_by(
+                index=r.desc('timestamp')).limit(1).nth(0).run(
                 conn)['profit']
 
-    except:
+    except r.ReqlNonExistenceError as e:
         previous_max_profit = 0
 
     if max_profit != previous_max_profit:
-        r.table('{}_{}_{}'.format(base, secondary, token)).insert({
+        r.db('arbitrage').table('{}_{}_{}'.format(base, secondary, token)).insert({
             "timestamp": r.now(),
             "combination": '{}_{}_{}'.format(base, secondary, token),
             "profit": max(float((step_3 - 1) * 100), float((step_6 - 1) * 100))
@@ -38,32 +39,10 @@ def calculate_triangle_both_ways(base_by_secondary, secondary_by_token, base_by_
     if max(float((step_3 - 1) * 100), float((step_6 - 1) * 100)) > 0:
         print(datetime.now(), max(float((step_3 - 1) * 100), float((step_6 - 1) * 100)), base, secondary, token)
 
-        # print(r.table('{}_{}_{}'.format(base, secondary, token)).order_by(index=r.desc('timestamp')).limit(1).nth(0).run(
-        #   conn))
 
     else:
         pass
 
-    """
-    if (step_3 - 1) * 100 < 0.0 and (step_6 - 1) * 100 < 0.0:
-        print(str(datetime.now()), ': ', base, ' - ', secondary, ' - ', token, ':', (step_3 - 1) * 100,
-              '%')
-        pass
-    else:
-        if (step_3 - 1) * 100 < 0.0:
-            pass
-        else:
-            print(str(datetime.now()), ':   PROFIT!', base, ' - ', secondary, ' - ', token, ':', (step_3 - 1) * 100,
-                  '%')
-            print(base_by_secondary, secondary_by_token, base_by_token)
-            return [base, secondary, token, (step_3 - 1) * 100]
-        if (step_6 - 1) * 100 < 0.0:
-            pass
-        else:
-            print(str(datetime.now()), ':   PROFIT!', base, ' - ', token, ' - ', secondary, ':', (step_6 - 1) * 100,
-                  '%')
-            print(base_by_secondary, secondary_by_token, base_by_token)
-            """
     return [base, token, secondary, (step_6 - 1) * 100]
 
 
@@ -74,8 +53,6 @@ def run_orderbook(orderbook, pair):
             calculate_triangle_both_ways(orderbook["{}-{}".format(item[1], item[0])],
                                          orderbook["{}-{}".format(item[2], item[1])],
                                          orderbook["{}-{}".format(item[2], item[0])], item[0], item[1], item[2])
-        # calculate_triangle_both_ways(orderbook["ETH-BTC"], orderbook["ZEC-ETH"], orderbook["ZEC-BTC"],
-        #                              "BTC", "ETH", "ZEC")
 
         except KeyError as e:
             pass

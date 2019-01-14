@@ -12,88 +12,90 @@ def get_bid_ask():
     for key, value in orig_dict.items():
         bid_ask_dict[str(key)] = {'ask': float(value['lowestAsk']), 'bid': float(value['highestBid'])}
 
+    print(type(bid_ask_dict))
+    print(bid_ask_dict)
+
     return bid_ask_dict
 
-
 # figure out what this does
-def get_base_list(curr_dict):
-    """
-    Retrieves the base currency for a triangular trade
-    """
-    curr_list = []
-    for key in curr_dict.keys():
-        base_curr = key.split('_')[0]
-        if base_curr not in curr_list:
-            curr_list.append(base_curr)
-    return curr_list
+# def get_base_list(curr_dict):
+#     """
+#     Retrieves the base currency for a triangular trade
+#     """
+#     curr_list = []
+#     for key in curr_dict.keys():
+#         base_curr = key.split('_')[0]
+#         if base_curr not in curr_list:
+#             curr_list.append(base_curr)
+#     return curr_list
 
 
 # takes an input of a combination of all
-def create_combination_dict(btc_list, eth_list, xmr_list, usdt_list):
-    all_list = [btc_list, eth_list, xmr_list, usdt_list]
-    tri_list = []
-
-    for item in get_curr_in_common(btc_list, eth_list):
-        tri_list.append(['BTC', 'ETH', item])
-        # tri_list.append(['ETH', 'BTC', item])
-
-    for item in get_curr_in_common(btc_list, xmr_list):
-        tri_list.append(['BTC', 'XMR', item])
-    #        tri_list.append(['XMR', 'BTC', item])
-
-    for item in get_curr_in_common(btc_list, usdt_list):
-        # tri_list.append(['BTC', 'USDT', item])
-        tri_list.append(['USDT', 'BTC', item])
-
-    #    for item in get_curr_in_common(eth_list, xmr_list):
-    #        tri_list.append(['ETH', 'XMR', item])
-    #        tri_list.append(['XMR', 'ETH', item])
-
-    for item in get_curr_in_common(eth_list, usdt_list):
-        # tri_list.append(['ETH', 'USDT', item])
-        tri_list.append(['USDT', 'ETH', item])
-
-    #    for item in get_curr_in_common(xmr_list, usdt_list):
-    #        tri_list.append(['XMR', 'USDT', item])
-    #        tri_list.append(['USDT', 'XMR', item])
-
-    return tri_list
-
-
-def get_curr_in_common(list1, list2):
-    in_common = []
-    for item in list1:
-        if item in list2:
-            in_common.append(item)
-    return in_common
+# def create_combination_dict(btc_list, eth_list, xmr_list, usdt_list):
+#     all_list = [btc_list, eth_list, xmr_list, usdt_list]
+#     tri_list = []
+#
+#     for item in get_curr_in_common(btc_list, eth_list):
+#         tri_list.append(['BTC', 'ETH', item])
+#         # tri_list.append(['ETH', 'BTC', item])
+#
+#     for item in get_curr_in_common(btc_list, xmr_list):
+#         tri_list.append(['BTC', 'XMR', item])
+#     #        tri_list.append(['XMR', 'BTC', item])
+#
+#     for item in get_curr_in_common(btc_list, usdt_list):
+#         # tri_list.append(['BTC', 'USDT', item])
+#         tri_list.append(['USDT', 'BTC', item])
+#
+#     #    for item in get_curr_in_common(eth_list, xmr_list):
+#     #        tri_list.append(['ETH', 'XMR', item])
+#     #        tri_list.append(['XMR', 'ETH', item])
+#
+#     for item in get_curr_in_common(eth_list, usdt_list):
+#         # tri_list.append(['ETH', 'USDT', item])
+#         tri_list.append(['USDT', 'ETH', item])
+#
+#     #    for item in get_curr_in_common(xmr_list, usdt_list):
+#     #        tri_list.append(['XMR', 'USDT', item])
+#     #        tri_list.append(['USDT', 'XMR', item])
+#
+#     return tri_list
 
 
-def create_combinations():
-    ##curr_dict is a dictionary of all trading pairs and their prices
-    curr_dict = get_bid_ask()
+# def get_curr_in_common(list1, list2):
+#     in_common = []
+#     for item in list1:
+#         if item in list2:
+#             in_common.append(item)
+#     return in_common
 
-    btc_list = []
-    eth_list = []
-    xmr_list = []
-    usdt_list = []
 
-    # get all trading pairs that start with one of the four parent coins
-    for key, value in curr_dict.items():
-        if key.split('_')[0] == 'BTC':
-            btc_list.append(key.split('_')[1])
-        if key.split('_')[0] == 'ETH':
-            eth_list.append(key.split('_')[1])
-        if key.split('_')[0] == 'XMR':
-            xmr_list.append(key.split('_')[1])
-        if key.split('_')[0] == 'USDT':
-            usdt_list.append(key.split('_')[1])
-
-    # get all the triangular possibilities
-    combinations = create_combination_dict(btc_list, eth_list, xmr_list, usdt_list)
-    pairs = list(curr_dict.keys())
-    pairs = [p.replace('_', '-') for p in pairs]
-
-    return combinations, pairs
+# def create_combinations():
+#     ##curr_dict is a dictionary of all trading pairs and their prices
+#     curr_dict = get_bid_ask()
+#
+#     btc_list = []
+#     eth_list = []
+#     xmr_list = []
+#     usdt_list = []
+#
+#     # get all trading pairs that start with one of the four parent coins
+#     for key, value in curr_dict.items():
+#         if key.split('_')[0] == 'BTC':
+#             btc_list.append(key.split('_')[1])
+#         if key.split('_')[0] == 'ETH':
+#             eth_list.append(key.split('_')[1])
+#         if key.split('_')[0] == 'XMR':
+#             xmr_list.append(key.split('_')[1])
+#         if key.split('_')[0] == 'USDT':
+#             usdt_list.append(key.split('_')[1])
+#
+#     # get all the triangular possibilities
+#     combinations = create_combination_dict(btc_list, eth_list, xmr_list, usdt_list)
+#     pairs = list(curr_dict.keys())
+#     pairs = [p.replace('_', '-') for p in pairs]
+#
+#     return combinations, pairs
 
 
 def triangular_pair_list():
@@ -125,7 +127,7 @@ def get_checkable_combinations(triangular_pair_list, base, secondary):
     return checkable_list
 
 
-def gen_pairs():
+def gen_poloniex_pairs():
     ret = {}
     pairs = requests.get('https://poloniex.com/public?command=returnTicker').json()
     for pair in pairs:
@@ -136,7 +138,7 @@ def gen_pairs():
     return ret
 
 
-poloniex_id_pair_mapping = gen_pairs()
-poloniex_pair_id_mapping = {value: key for key, value in poloniex_id_pair_mapping.items()}
+poloniex_id_pair_mapping = gen_poloniex_pairs()
+#poloniex_pair_id_mapping = {value: key for key, value in poloniex_id_pair_mapping.items()}
 poloniex_pair_mapping = {value.split("_")[1] + "-" + value.split("_")[0]: value for _, value in
                          poloniex_id_pair_mapping.items()}
