@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='poloniextriarb',
     version='0.0.1',
-    packages=['tools', 'tools.Bokeh.scripts'],
+    packages=['tools', 'tools.Bokeh'],
     url='',
     license='',
     author='Jonas Högman',
