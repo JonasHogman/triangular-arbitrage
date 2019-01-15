@@ -1,6 +1,5 @@
-# myplot.py
 from bokeh.plotting import figure, curdoc
-from bokeh.models import Range1d, HoverTool
+from bokeh.models import Range1d, HoverTool, DataRange
 from bokeh.models.sources import ColumnDataSource
 from bokeh.models.formatters import DatetimeTickFormatter
 
@@ -21,17 +20,17 @@ source = ColumnDataSource(data=dict(x=[], btc_xmr_bcn=[], btc_xmr_dash=[], btc_x
 
 p = figure(plot_width=800, plot_height=400, x_axis_type='datetime', title="Triangular Arbitrage Profit")
 
-p.x_range.follow = "end"
-p.x_range.follow_interval = 1000 * 3600
-p.x_range.range_padding = 0
+# p.x_range.follow = "end"
+# p.x_range.follow_interval = 1000 * 60
+# p.x_range.min_interval = 1000 * 60
+
 r1 = p.line(x='x', y='btc_xmr_bcn', color="firebrick", line_width=2, source=source, legend='BTC-XMR-BCN')
 r2 = p.line(x='x', y='btc_xmr_dash', color="darkviolet", line_width=2, source=source, legend='BTC-XMR-DASH')
 r3 = p.line(x='x', y='btc_xmr_ltc', color="orange", line_width=2, source=source, legend='BTC-XMR-LTC')
 r4 = p.line(x='x', y='btc_xmr_maid', color="olivedrab", line_width=2, source=source, legend='BTC-XMR-MAID')
 r5 = p.line(x='x', y='btc_xmr_nxt', color="mediumturquoise", line_width=2, source=source, legend='BTC-XMR-NXT')
 r6 = p.line(x='x', y='btc_xmr_zec', color="darkslategray", line_width=2, source=source, legend='BTC-XMR-ZEC')
-p.y_range = Range1d(-4, 3)
-# p.x_range = Range1d(min_interval=200)
+p.y_range = Range1d(-4, 4)
 
 p.xaxis.axis_label = 'Time'
 p.xaxis.formatter = DatetimeTickFormatter(seconds=["%S s"],
@@ -95,7 +94,7 @@ def get_connection():
 
 
 doc.add_root(p)
-# doc.add_periodic_callback(update(), 100)
+# doc.add_periodic_callback(update(x=(datetime.datetime.now() - start_time).total_seconds() * 1000, curr_dict=curr_dict), 100)
 
 thread = Thread(target=stream_data)
 thread.start()

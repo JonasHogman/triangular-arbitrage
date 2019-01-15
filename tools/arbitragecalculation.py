@@ -39,20 +39,29 @@ def calculate_triangle_both_ways(base_by_secondary, secondary_by_token, base_by_
     if max(float((step_3 - 1) * 100), float((step_6 - 1) * 100)) > 0:
         print(datetime.now(), max(float((step_3 - 1) * 100), float((step_6 - 1) * 100)), base, secondary, token)
 
-
     else:
         pass
 
-    return [base, token, secondary, (step_6 - 1) * 100]
+    return max_profit
 
 
 def run_orderbook(orderbook, pair):
+    """
+    Calculate new profit for each affected triangular combination
+    :param orderbook:
+    :param pair: last updated pair
+    :return:
+    """
+    streamable_updates = {}
     for item in tools.pairs.get_checkable_combinations(tools.pairs.triangular_pair_list(), pair.split('-')[1],
                                                        pair.split('-')[0]):
         try:
-            calculate_triangle_both_ways(orderbook["{}-{}".format(item[1], item[0])],
-                                         orderbook["{}-{}".format(item[2], item[1])],
-                                         orderbook["{}-{}".format(item[2], item[0])], item[0], item[1], item[2])
+            streamable_updates["{}_{}_{}".format(item[0], item[1], item[2])] = calculate_triangle_both_ways(
+                orderbook["{}-{}".format(item[1], item[0])],
+                orderbook["{}-{}".format(item[2], item[1])],
+                orderbook["{}-{}".format(item[2], item[0])], item[0], item[1], item[2])
 
         except KeyError as e:
             pass
+
+    return streamable_updates
