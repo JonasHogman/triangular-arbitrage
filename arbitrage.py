@@ -7,6 +7,8 @@ from tools.arbitragecalculation import run_orderbook
 from sortedcontainers import SortedDict
 import tools.db
 import rethinkdb as r
+import logging
+import logging.config
 
 # Examples of some handlers for different updates. These currently don't do much.
 # Handlers should conform to the patterns/signatures in callback.py
@@ -27,52 +29,55 @@ async def book(feed, pair, book, timestamp):
     :return
     """
     global orderbooks
-    global conn
 
     # if new update changes best bid/ask
     try:
         if orderbooks[pair] != {"bid": book[BID].items()[-1], "ask": book[ASK].items()[0]}:
-            orderbooks[pair] = {
-                "bid": book[BID].items()[-1],
-                "ask": book[ASK].items()[0],
-            }
-            streamable_updates = (run_orderbook(orderbooks, pair))
-            for combination, profit in streamable_updates.items():
-                r.db('arbitrage').table(combination).insert({
-                    "timestamp": r.now(),
-                    "combination": combination,
-                    "profit": profit
-                }).run(conn)
-            # print(streamable_updates)
+            update_database(book, pair)
         else:
             pass
 
+    # if database table doesn't already exist, create it
     except KeyError as e:
-        orderbooks[pair] = {
-            "bid": book[BID].items()[-1],
-            "ask": book[ASK].items()[0],
-        }
-        streamable_updates = (run_orderbook(orderbooks, pair))
-        for combination, profit in streamable_updates.items():
-            r.db('arbitrage').table(combination).insert({
-                "timestamp": r.now(),
-                "combination": combination,
-                "profit": profit
-            }).run(conn)
+        update_database(book, pair)
 
     # print("--- {:.15f} ---".format(time.clock() - start_time))
 
+
+def update_database(book, pair):
+    global orderbooks
+    global conn
+    orderbooks[pair] = {
+        "bid": book[BID].items()[-1],
+        "ask": book[ASK].items()[0],
+    }
+    streamable_updates = (run_orderbook(orderbooks, pair))
+    for combination, profit in streamable_updates.items():
+        r.db('arbitrage').table(combination).insert({
+            "timestamp": r.now(),
+            "combination": combination,
+            "profit": profit
+        }).run(conn)
 
 def main():
     """
     Subscribe to all feeds
     """
-    tools.db.create_database("arbitrage")
+    logger = logging.getLogger('arbitrage')
+    logger.setLevel(logging.DEBUG)
+
+    handler = logging.FileHandler('arbitrage.log')
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    # tools.db.create_database("arbitrage")
     f = FeedHandler()
 
     f.add_feed(
         Poloniex(
-            channels=poloniex_pair_mapping,
+            # channels=poloniex_pair_mapping,
+            channels=['BTC-USDT', 'ETH-BTC', 'ETH-USDT'],
             callbacks={L2_BOOK: BookCallback(book)},
         )
     )
