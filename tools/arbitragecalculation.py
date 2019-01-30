@@ -4,11 +4,13 @@ from decimal import *
 import tools.db
 import rethinkdb as r
 import logging
+import time
 
 module_logger = logging.getLogger('arbitrage')
 
 
 def test_calculation(btc_eth, eth_zec, btc_zec, fee, btc_starting_amount, eth_starting_amount, zec_starting_amount):
+    t_start = time.perf_counter()
     btc_eth_ask_price = Decimal(btc_eth['asks'][0])
     btc_eth_bid_price = Decimal(btc_eth['bids'][0])
     eth_zec_ask_price = Decimal(eth_zec['asks'][0])
@@ -23,22 +25,42 @@ def test_calculation(btc_eth, eth_zec, btc_zec, fee, btc_starting_amount, eth_st
     btc_zec_ask_amount = Decimal(btc_zec['asks'][1])
     btc_zec_bid_amount = Decimal(btc_zec['bids'][1])
 
-    startBTC_BTCETH_r1 = btc_eth_ask_price * btc_eth_ask_amount
-    startBTC_ETHZEC_r1 = (eth_zec_ask_price * eth_zec_ask_amount) * btc_eth_ask_price
-    print('1. ', eth_zec_ask_price * eth_zec_ask_amount)
-    startBTC_BTCZEC_r1 = ((btc_zec_bid_price / btc_zec_bid_amount) * eth_zec_ask_price) * btc_eth_ask_price
-    print('2. ', (btc_zec_bid_price / btc_zec_bid_amount))
-    print('3. ', ((btc_zec_bid_price / btc_zec_bid_amount) * eth_zec_ask_price))
+    startBTC_BTCETH_r1 = (btc_eth_ask_price * btc_eth_ask_amount).quantize(Decimal('.00000001'),
+                                                                           rounding=ROUND_HALF_UP)
 
-    start_BTC = min(startBTC_BTCETH_r1, startBTC_ETHZEC_r1, startBTC_BTCZEC_r1)
+    startBTC_ETHZEC_r1 = ((eth_zec_ask_price * eth_zec_ask_amount).quantize(Decimal('.00000001'),
+                                                                            rounding=ROUND_HALF_UP) * btc_eth_ask_price).quantize(
+        Decimal('.00000001'), rounding=ROUND_HALF_UP)
+
+    startBTC_BTCZEC_r1 = ((btc_zec_bid_amount * eth_zec_ask_price).quantize(Decimal('.00000001'),
+                                                                            rounding=ROUND_HALF_UP) * btc_eth_ask_price).quantize(
+        Decimal('.00000001'), rounding=ROUND_HALF_UP)
+
+    start_BTC = min(startBTC_BTCETH_r1, startBTC_ETHZEC_r1, startBTC_BTCZEC_r1).quantize(Decimal('.00000001'),
+                                                                                         rounding=ROUND_HALF_UP)
 
     print(startBTC_BTCETH_r1, startBTC_ETHZEC_r1, startBTC_BTCZEC_r1)
 
-    return start_BTC
+    trade_1 = (start_BTC / btc_eth_ask_price).quantize(Decimal('.00000001'), rounding=ROUND_HALF_UP)
+    print('Trading', start_BTC, 'BTC for', trade_1, 'ETH')
+
+    trade_2 = (trade_1 / eth_zec_ask_price).quantize(Decimal('.00000001'), rounding=ROUND_HALF_UP)
+    print('Trading', trade_1, 'ETH for', trade_2, 'ZEC')
+
+    trade_3 = (trade_2 * btc_zec_bid_price).quantize(Decimal('.00000001'), rounding=ROUND_HALF_UP)
+    print('Trading', trade_2, 'ZEC for', trade_3, 'BTC')
+
+    print(f'Profit in BTC: {trade_3 - start_BTC:.8f}')
+    print(f'Profit in percentage: {((trade_3 / start_BTC) - 1) * 100:.6f}%')
+
+    print(time.perf_counter()-t_start)
+
+    return trade_3 - start_BTC
 
 
 def calculate_triangle_both_ways(base_secondary, secondary_token, base_token, base, secondary, token, fee):
     # first path
+    # TODO: Step one should use multiplication of price*amount, not 1/
     step_1 = round((1 / base_secondary['ask'][0]) * Decimal(1 - fee), 8)  # buy secondary with base
     step_2 = round((step_1 / secondary_token['ask'][0]) * Decimal(1 - fee), 8)  # buy token with secondary
     step_3 = round((step_2 * base_token['bid'][0]) * Decimal(1 - fee), 8)  # sell tokens for base

@@ -1,7 +1,5 @@
 import unittest
-import arbitrage
 import tools.arbitragecalculation
-import tools.db
 from decimal import Decimal
 
 
@@ -13,7 +11,7 @@ class TestArbitrage(unittest.TestCase):
 
         self.assertEqual(tools.arbitragecalculation.test_calculation(test_dict["BTC_ETH"], test_dict["ETH_ZEC"],
                                                                      test_dict["BTC_ZEC"], 0, 100, 100, 100),
-                         Decimal('0.99728342'))
+                         Decimal('-0.00000060'))
 
     def test_calculate_lowest_amount(self):
         test_dict = {"BTC_ETH": {"asks": [0.03195317, 0.00690458], "bids": [0.03194500, 88.0035]},
