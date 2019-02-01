@@ -16,7 +16,7 @@ import logging.config
 # while the callbacks are being handled (unless they in turn await other functions or I/O)
 # so they should be as lightweight as possible
 orderbooks = SortedDict()
-conn = tools.db.get_connection()
+# conn = tools.db.get_connection()
 
 
 async def book(feed, pair, book, timestamp):
@@ -46,25 +46,24 @@ async def book(feed, pair, book, timestamp):
 
 def update_database(book, pair):
     global orderbooks
-    global conn
     orderbooks[pair] = {
         "bid": book[BID].items()[-1],
         "ask": book[ASK].items()[0],
     }
     streamable_updates = (run_orderbook(orderbooks, pair))
-    for combination, profit in streamable_updates.items():
-        r.db('arbitrage').table(combination).insert({
-            "timestamp": r.now(),
-            "combination": combination,
-            "profit": profit
-        }).run(conn)
+    for combination, profit in streamable_updates.items(): pass
+        # r.db('arbitrage').table(combination).insert({
+        #     "timestamp": r.now(),
+        #     "combination": combination,
+        #     "profit": profit
+        # }).run(conn)
 
 def main():
     """
     Subscribe to all feeds
     """
     logger = logging.getLogger('arbitrage')
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     handler = logging.FileHandler('arbitrage.log')
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')

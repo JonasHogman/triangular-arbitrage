@@ -1,7 +1,9 @@
 import rethinkdb as r
 from tools.pairs import triangular_pair_list
+from influxdb import InfluxDBClient
 
 _conn = None
+_influxconn = None
 
 
 def get_connection():
@@ -15,6 +17,12 @@ def get_connection():
 
     return _conn
 
+def get_influx_connection():
+    global _influxconn
+    if not _influxconn:
+        _influxconn = InfluxDBClient('localhost', 8086, 'root', 'root', 'arbitrage')
+
+    return _influxconn
 
 def create_database(name):
     """
